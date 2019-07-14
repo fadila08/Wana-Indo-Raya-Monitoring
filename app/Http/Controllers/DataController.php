@@ -8,6 +8,7 @@ use App\Transformers\DataTransformers;
 use App\Transformers\WaktuTransformers;
 use App\Transformers\LevelAirTransformers;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DataController extends Controller
 {
@@ -89,7 +90,6 @@ class DataController extends Controller
         ->serializeWith(new \Spatie\Fractalistic\ArraySerializer())
         ->toArray();
     }
-    
 
     //untuk menyimpan data
     public function post(Request $request, Sensor $sensor)
@@ -105,5 +105,26 @@ class DataController extends Controller
         return response()->json([
             'message' => 'data sudah tersimpan',
         ]);
+    }
+
+    public function update(Request $request)
+    {
+        $date = $request->date;
+        
+        $sensor = Sensor::where(DB::raw('DATE(created_at)'), $date)->orderBy('id', 'desc')->get()->reverse();
+        $data = [];
+        $label = [];
+
+        foreach ($sensor as $sr) {
+            array_push($data, $sr->level_air);
+            array_push($label, date('H:i', strtotime($sr->created_at)));
+        }
+
+        $dt = [
+            'data' => $data,
+            'label' => $label
+        ];
+
+        return response()->json($dt);
     }
 }
