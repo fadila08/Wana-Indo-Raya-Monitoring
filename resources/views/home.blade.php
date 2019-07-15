@@ -163,7 +163,18 @@
                         setInterval(function () {
                             var date = $('#date').val();
                             load();
-                            table.ajax.reload();
+                            var lastData = table.row().data()[1];
+                            var newData = "";
+                            $.ajax({
+                                type: "GET",
+                                url: "{{ route('api.show') }}",
+                                success: function (dt) {
+                                    newData = dt.data[0][1];
+                                    if (!(lastData===newData)) {
+                                        table.ajax.reload();    
+                                    }
+                                }
+                            });
                             $.ajax({
                                 type: "POST",
                                 url: "{{ route('api.update') }}",
